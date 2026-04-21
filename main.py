@@ -18,6 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 from ingest import run_ingest
+from points import update_and_get_points
 from report import format_sms, get_spending, send_sms
 
 
@@ -31,7 +32,8 @@ def main():
     logger.info("Ingested %d new receipt(s)", new)
 
     spending = get_spending()
-    msg = format_sms(spending)
+    points = update_and_get_points()
+    msg = format_sms(spending, points)
 
     if args.dry_run:
         print("\n--- SMS preview ---")

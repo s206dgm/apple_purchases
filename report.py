@@ -111,15 +111,23 @@ def _week_icon(value: float) -> str:
     return "🚨"
 
 
-def format_sms(spending: dict) -> str:
+def format_sms(spending: dict, points: dict | None = None) -> str:
     now = datetime.now(timezone.utc)
     week = spending['week']
     ks_week = spending['ks_week']
     sub_lines = "\n".join(f"{name}: ${amt:,.2f}" for name, amt in spending['sub_breakdown'])
+
+    if points is not None:
+        from points import format_points, trailing_week_icons
+        streak_line = f"{trailing_week_icons()}\n{format_points(points)}\n"
+    else:
+        streak_line = ""
+
     return (
         f"SUMMARY\n"
         f"{_week_icon(ks_week)} KS Wk: ${ks_week:,.2f}{_tier_remaining(ks_week, [150, 200])}\n"
         f"{_week_icon(week)} TOTAL Wk: ${week:,.2f}{_tier_remaining(week, [150, 200])}\n"
+        f"{streak_line}"
         f"\n"
         f"SUBS\n"
         f"{sub_lines}\n"
