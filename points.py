@@ -45,7 +45,7 @@ def _week_color(total: float) -> str:
     return "🔴"
 
 
-def trailing_week_icons(n: int = 5) -> str:
+def trailing_week_icons(n: int = 2) -> str:
     current = _week_start()
     icons = []
     for i in range(n, 0, -1):
@@ -77,8 +77,6 @@ def update_and_get_points() -> dict:
                 if state["moons"] >= MOONS_PER_SUN:
                     state["suns"] += 1
                     state["moons"] = 0
-        else:
-            state["stars"] = 0
 
     state["last_week_start"] = current_week_str
     _save(state)
@@ -94,10 +92,4 @@ def format_points(state: dict) -> str:
     if state["stars"]:
         parts.append("⭐" * state["stars"])
 
-    if not parts:
-        return "⭐ earn your first star with a green week!"
-
-    remaining = STARS_PER_MOON - state["stars"]
-    next_badge = "🌙" if state["moons"] < MOONS_PER_SUN else "☀️"
-    hint = f"  ({remaining} to {next_badge})" if state["stars"] > 0 else ""
-    return " ".join(parts) + hint
+    return " ".join(parts) if parts else "⭐"

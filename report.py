@@ -90,7 +90,7 @@ def get_spending() -> dict:
         "ks_week":       ks_week(),
         "sub_month":     sub_total(month_start),
         "sub_year":      sub_total(year_start),
-        "sub_breakdown": sub_breakdown(month_start),
+        "sub_breakdown": sub_breakdown(week_start),
     }
     conn.close()
     return result
@@ -99,12 +99,15 @@ def get_spending() -> dict:
 def _tier_remaining(value: float, thresholds: list[float]) -> str:
     for t in thresholds:
         if value < t:
-            return f"  (${t - value:,.2f} to 🟡)" if t == thresholds[0] else f"  (${t - value:,.2f} to 🚨)"
-    return f"  (+${value - thresholds[0]:,.2f} over budget)"
+            next_icon = "🟡" if t == thresholds[0] else "🚨"
+            return f" (${t - value:,.0f}→{next_icon})"
+    over = value - thresholds[0]
+    multiplier = value / thresholds[0]
+    return f" (+${over:,.0f} | {multiplier:.1f}x)"
 
 
 def _week_icon(value: float) -> str:
-    if value < 120:
+    if value < 150:
         return "🟢"
     elif value < 200:
         return "🟡"
@@ -123,14 +126,14 @@ def format_sms(spending: dict, points: dict | None = None) -> str:
     else:
         streak_line = ""
 
+    subs_this_week = sub_lines if sub_lines else "No new subs this week"
     return (
         f"SUMMARY\n"
         f"{_week_icon(ks_week)} KS Wk: ${ks_week:,.2f}{_tier_remaining(ks_week, [150, 200])}\n"
-        f"{_week_icon(week)} TOTAL Wk: ${week:,.2f}{_tier_remaining(week, [150, 200])}\n"
         f"{streak_line}"
         f"\n"
         f"SUBS\n"
-        f"{sub_lines}\n"
+        f"{subs_this_week}\n"
         f"{now.strftime('%b')}: ${spending['sub_month']:,.2f}  •  {now.year}: ${spending['sub_year']:,.2f}\n"
         f"\n"
         f"{now.strftime('%b')} ${spending['month']:,.0f}  •  {now.year} ${spending['year']:,.0f}  •  All ${spending['all_time']:,.0f}"
